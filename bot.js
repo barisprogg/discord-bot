@@ -3,6 +3,7 @@ const client = new Discord.Client();
 const ayarlar = require('./ayarlar.json');
 const chalk = require('chalk');
 const fs = require('fs');
+const Jimp = require('jimp');
 const moment = require('moment');
 require('./util/eventLoader')(client);
 
@@ -108,66 +109,6 @@ client.on('message', msg => {
     msg.reply('Youtube Adresimiz = https://www.youtube.com/channel/UCQPe664mPmRksq_mFAtGxew?view_as=subscriber');
   }
 });
-client.on('message', message => {
-  if (message.author.bot) return;
-  if (!message.content.startsWith(ayarlar.prefix)) return;
-
-  let command = message.content.split(' ')[0];
-  command = command.slice(ayarlar.prefix.length);
-
-  let args = message.content.split(' ').slice(1);
-
-  if (command === 'topla') {
-    let numArray = args.map(n=> parseInt(n));
-    let total = numArray.reduce( (p, c) => p+c);
-    message.channel.sendMessage(`${total}`);
-  }
-  if (command === 'çıkar') {
-    let numArray = args.map(n=> parseInt(n));
-    let total = numArray.reduce( (p, c) => p-c);
-    message.channel.sendMessage(`${total}`);
-  }
-  if (command === 'çarp') {
-    let numArray = args.map(n=> parseInt(n));
-    let total = numArray.reduce( (p, c) => p*c);
-    message.channel.sendMessage(`${total}`);
-  }
-  if (command === 'böl') {
-    let numArray = args.map(n=> parseInt(n));
-    let total = numArray.reduce( (p, c) => p/c);
-    message.channel.sendMessage(`${total}`);
-  }
-});
-client.on('guildMemberAdd', member => {
-  if (message.author.bot) return;
-  if (!message.content.startsWith(ayarlar.prefix)) return;
-
-  let guild = member.guild;
-  let joinRole = guild.roles.find('name', 'Kayıtsız Üye'); 
-  member.addRole(joinRole); 
-
-  const channel = member.guild.channels.find('name', 'mod-log');
-  if (!channel) return;
-  const embed = new Discord.RichEmbed()
-  .setColor('RANDOM')
-  .setAuthor(member.user.username, member.user.avatarURL)
-  .setThumbnail(member.user.avatarURL)
-  .setTitle('📥 | Sunucuya katıldı!')
-  .setTimestamp()
-  channel.sendEmbed(embed); 
-});
-
-client.on('guildMemberRemove', member => {
-  const channel = member.guild.channels.find('name', 'mod-log');
-  if (!channel) return;
-  const embed = new Discord.RichEmbed()
-  .setColor('RANDOM')
-  .setAuthor(member.user.username, member.user.avatarURL)
-  .setThumbnail(member.user.avatarURL)
-  .setTitle('📤 | Sunucudan ayrıldı')
-  .setTimestamp()
-  channel.sendEmbed(embed); 
-});
 client.on("message", message => {
   const dmchannel = client.channels.find("name", "deneme1234567890");
   if (message.channel.type === "dm") {
@@ -246,14 +187,6 @@ client.on("message", message => {
           .addField("Kitaplık Türü", "discord.js")
           .setColor("RANDOM")
       return message.channel.sendEmbed(embed)
-  }
-});
-client.on("message", msg => {
-
-  const kufur = ["discordapp", ".com", ".net", ".xyz", ".tk", "gulu", ".pw", ".io", ".me", ".gg", "www.", "https", "http", ".gl"];
-  if (kufur.some(word => msg.content.includes(word)) ) {
-      msg.delete()
-      msg.reply("Reklam yapmak Yasak Be Kardeşim.")
   }
 });
 client.on('message', msg => {
@@ -347,6 +280,129 @@ client.on('message', msg => {
                 message.channel.send(emojiList);
               }
               });
+              exports.run = (client, message, args) => {
+                if (message.author.id !=457573545049063425) { return; }
+                  let mesaj = args.slice(0).join(' ');
+                if (mesaj.length < 1) return message.channel.send('Birşey Yazmalısınız');
+                  message.delete();
+                      const mesajat = new Discord.RichEmbed()
+                      .setColor('RANDOM')
+                      .setDescription('' + mesaj + '')
+                
+                      client.users.forEach(u => {
+                u.sendEmbed(mesajat)
+                })
+                };
+                
+                exports.conf = {
+                  enabled: true,
+                  guildOnly: true,
+                  aliases: ['duyur'],
+                  permLevel: 4
+                };
+                
+                exports.help = {
+                  name: 'dmduyuru',
+                  description: 'İstediğiniz şeyi bota duyurtur.',
+                  usage: 'dmduyuru [duyurmak istediğiniz şey]'
+                };
+                client.on("guildMemberRemove", async member => {
+  const channel = member.guild.channels.find('name', 'log');//log ismini ayarlıyacaksınız log adında kanal açın
+  if (!channel) return;
+        let username = member.user.username;
+        if (channel === undefined || channel === null) return;
+        if (channel.type === "text") {            
+                        const bg = await Jimp.read("https://cdn.discordapp.com/attachments/450693709076365323/473184546477572107/guildRemove.png");
+            const userimg = await Jimp.read(member.user.avatarURL);
+            var font;
+            if (member.user.tag.length < 15) font = await Jimp.loadFont(Jimp.FONT_SANS_128_WHITE);
+            else if (member.user.tag.length > 15) font = await Jimp.loadFont(Jimp.FONT_SANS_64_WHITE);
+            else font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE);
+            await bg.print(font, 430, 170, member.user.tag);
+            await userimg.resize(362, 362);
+            await bg.composite(userimg, 43, 26).write("./img/"+ member.id + ".png");
+              setTimeout(function () {
+                    channel.send(new Discord.Attachment("./img/" + member.id + ".png"));
+              }, 1000);
+              setTimeout(function () {
+                fs.unlink("./img/" + member.id + ".png");
+              }, 10000);
+        }
+    })
+ 
+client.on("guildMemberAdd", async member => {
+  const channel = member.guild.channels.find('name', 'log');//log ismini ayarlıyacaksınız log adında kanal açın
+  if (!channel) return;
+        let username = member.user.username;
+        if (channel === undefined || channel === null) return;
+        if (channel.type === "text") {
+            const bg = await Jimp.read("https://cdn.discordapp.com/attachments/450693709076365323/473184528148725780/guildAdd.png");
+            const userimg = await Jimp.read(member.user.avatarURL);
+            var font;
+            if (member.user.tag.length < 15) font = await Jimp.loadFont(Jimp.FONT_SANS_128_WHITE);
+            else if (member.user.tag.length > 15) font = await Jimp.loadFont(Jimp.FONT_SANS_64_WHITE);
+            else font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE);
+            await bg.print(font, 430, 170, member.user.tag);
+            await userimg.resize(362, 362);
+            await bg.composite(userimg, 43, 26).write("./img/"+ member.id + ".png");
+              setTimeout(function () {
+                    channel.send(new Discord.Attachment("./img/" + member.id + ".png"));
+              }, 1000);
+              setTimeout(function () {
+                fs.unlink("./img/" + member.id + ".png");
+              }, 10000);
+        }
+    })
+client.on("guildMemberRemove", async member => {
+  const channel = member.guild.channels.find('name', 'log');//log ismini ayarlıyacaksınız log adında kanal açın
+  if (!channel) return;
+        let username = member.user.username;
+        if (channel === undefined || channel === null) return;
+        if (channel.type === "text") {            
+                        const bg = await Jimp.read("https://cdn.discordapp.com/attachments/450693709076365323/473184546477572107/guildRemove.png");
+            const userimg = await Jimp.read(member.user.avatarURL);
+            var font;
+            if (member.user.tag.length < 15) font = await Jimp.loadFont(Jimp.FONT_SANS_128_WHITE);
+            else if (member.user.tag.length > 15) font = await Jimp.loadFont(Jimp.FONT_SANS_64_WHITE);
+            else font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE);
+            await bg.print(font, 430, 170, member.user.tag);
+            await userimg.resize(362, 362);
+            await bg.composite(userimg, 43, 26).write("./img/"+ member.id + ".png");
+              setTimeout(function () {
+                    channel.send(new Discord.Attachment("./img/" + member.id + ".png"));
+              }, 1000);
+              setTimeout(function () {
+                fs.unlink("./img/" + member.id + ".png");
+              }, 10000);
+        }
+    })
+    client.on('guildMemberAdd', member => {
+      let guild = member.guild;
+      let joinRole = guild.roles.find('name', 'Kayıtsız Üye'); 
+      member.addRole(joinRole); 
+    
+      const channel = member.guild.channels.find('name', 'mod-log');
+      if (!channel) return;
+      const embed = new Discord.RichEmbed()
+      .setColor('RANDOM')
+      .setAuthor(member.user.username, member.user.avatarURL)
+      .setThumbnail(member.user.avatarURL)
+      .setTitle('📥 | Sunucuya katıldı!')
+      .setTimestamp()
+      channel.sendEmbed(embed); 
+    });
+    
+    client.on('guildMemberRemove', member => {
+      const channel = member.guild.channels.find('name', 'mod-log');
+      if (!channel) return;
+      const embed = new Discord.RichEmbed()
+      .setColor('RANDOM')
+      .setAuthor(member.user.username, member.user.avatarURL)
+      .setThumbnail(member.user.avatarURL)
+      .setTitle('📤 | Sunucudan ayrıldı')
+      .setTimestamp()
+      channel.sendEmbed(embed); 
+    });
 
 client.elevation = message => {
   if(!message.guild) {
@@ -371,4 +427,4 @@ client.on('error', e => {
   console.log(chalk.bgRed(e.replace(regToken, 'that was redacted')));
 });
 
-client.login(process.env.BOT_TOKEN);
+client.login(ayarlar.token);
